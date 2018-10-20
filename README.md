@@ -2,7 +2,7 @@
 
 This single file script works like a dispatcher, distributing commands and parameters to scripts.
 
-The primary use case for `subcommander.sh` is to simplify developing applications with many (perhaps nested like a tree) subcommands. When using `subcommander.sh` you need only write your subcommand scripts following some simple rules and it will generate usage help and version information.
+The primary use case for `subcommander` is to simplify developing applications with many (perhaps nested like a tree) subcommands. When using `subcommander` you need only write your subcommand scripts following some simple rules and it will generate usage help and version information.
 
 ## Developing with Subcommander
 
