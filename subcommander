@@ -86,7 +86,7 @@ subcommands_help() {
 }
 
 extract_from_script() {
-	grep -P "^(#|//) $1" "$2" | cut -d":" -f2 | sed 's/^[[:space:]]*//' || true
+	grep -E "^(#|//) $1" "$2" | cut -d":" -f2 | sed 's/^[[:space:]]*//' || true
 }
 
 scope_to_subcommand() {
