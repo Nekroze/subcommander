@@ -1,0 +1,7 @@
+#!/bin/sh
+# Description: Does things
+# Usage: <REQUIRED> [<OPTIONAL_REPEATABLE_ARG>...]
+set -euf
+
+echo 'Hello World!'
+echo "I was given $*"

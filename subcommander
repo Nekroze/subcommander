@@ -1,0 +1,126 @@
+#!/bin/sh
+set -euf
+
+export APPLICATION="${APPLICATION:-subcommander}"
+export SUBCOMMANDS="${SUBCOMMANDS:-./subcommands}"
+export DESCRIPTION="${DESCRIPTION:-$APPLICATION}"
+export VERSION="${VERSION:-unknown}"
+
+subcommander() {
+	scope="$1"
+	subcmd="${2:-}"
+	newscope="$scope/$subcmd"
+	code=0
+	shift
+
+	if [ -n "$subcmd" ] &&  [ -d "$newscope" ]; then # if the subcmd is a directory
+		shift && subcommander "$newscope" "$@" # recurse into it
+	fi
+
+	if [ -n "$subcmd" ] && [ -f "$newscope" ]; then # if given a subcmd is a file
+		if is_help "${2:-}"; then # if the subcmd is an indication for help info
+			script_to_help "$newscope" # display help info
+		elif is_version "${2:-}"; then # if the subcmd is an indication for version info
+			display_version # display version info
+		else # otherwise execute the file
+			shift && exec "$newscope" "$@" # pass along the rest of a params
+		fi
+		exit $? # exit with the status of one of the above blocks
+	fi
+
+	is_version "$subcmd" && display_version
+	if ! is_help "$subcmd"; then
+		[ -z "$subcmd" ] || warn "Unknown subcommand: $(scope_to_subcommand "$newscope")"
+		code=1
+	fi
+
+	usage "$scope/"
+	exit "$code"
+}
+
+warn() {
+	>&2 printf '\e[1;33m%s\e[0m\n' "$*"
+}
+
+alias draw_subcommand_table="sort -s -k 1,1 | column -s'\`' -o' | ' -t -N SUBCOMMAND,DESCRIPTION -R SUBCOMMAND"
+subcmd_row() {
+	echo "$1\`$2"
+}
+
+usage() {
+	echo 'Usage:'
+	echo "	$(scope_to_subcommand "$1") <SUBCOMMAND> [<ARGUMENT>...]"
+	echo
+	echo "$DESCRIPTION"
+	echo
+	subcommands_help "$1" | draw_subcommand_table
+}
+
+# Takes a usage string (eg. '<SERVICE_NAME>') and a description string
+print_usage() {
+	pritnf 'Usage:\n\t%s\n\n%s' "$1" "$2"
+}
+
+script_to_usage() {
+	echo "$(scope_to_subcommand "$1") $(extract_from_script 'Usage' "$1")"
+}
+
+script_to_help() {
+	print_usage "$(script_to_usage "$1")" "$(extract_from_script 'Description' "$1")"
+}
+
+subcommands_help() {
+	scope="$1"
+	set +f
+	for subcmd in "$scope"/*; do
+		if [ -f "$subcmd" ]; then
+			subcmd_row "$(basename "$subcmd")" "$(extract_from_script 'Description' "$subcmd")"
+		elif [ -d "$subcmd" ]; then
+			dir_to_usage "$subcmd"
+		fi
+	done
+	set -f
+
+	subcmd_row help 'You are looking at it'
+	subcmd_row version 'Display version information'
+}
+
+extract_from_script() {
+	grep -P "^(#|//) $1" "$2" | cut -d":" -f2 | sed 's/^[[:space:]]*//' || true
+}
+
+scope_to_subcommand() {
+	echo "$1" | sed -e "s@$SUBCOMMANDS/@@" -e 's@/@ @g' -e 's@/$@@' 
+}
+
+dir_to_usage() {
+	subcmd_row "$(basename "$1")" 'Nested subcommand, try giving it --help'
+}
+
+is_help() {
+	case "${1:-}" in
+	'-h' | '--help' | 'help')
+		return 0
+		;;
+	*)
+		return 1
+		;;
+	esac
+}
+
+display_version() {
+	echo "$VERSION"
+}
+
+is_version() {
+	case "${1:-}" in
+	'-v' | '--version' | 'version')
+		return 0
+		;;
+	*)
+		return 1
+		;;
+	esac
+}
+
+subcommander "$SUBCOMMANDS" "$@"
