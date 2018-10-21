@@ -8,4 +8,5 @@ services:
       - --order=random
     volumes:
       - ./subcommander:/usr/bin/subcommander:ro
+      - ./subcommands:/usr/src/app/subcommands:ro
       - ./features:/usr/src/app/features
