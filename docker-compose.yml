@@ -3,7 +3,7 @@ version: '3.2'
 services:
 
   tests:
-    image: nekroze/containaruba:latest
+    image: nekroze/containaruba:alpine
     command:
       - --order=random
     volumes:
