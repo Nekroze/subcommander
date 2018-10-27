@@ -42,9 +42,9 @@ warn() {
 	>&2 printf '\e[1;33m%s\e[0m\n' "$*"
 }
 
-alias draw_subcommand_table="sort -s -k 1,1 | column -s'\`' -o' | ' -t -N SUBCOMMAND,DESCRIPTION -R SUBCOMMAND"
+alias draw_subcommand_table="sort -s -k 1,1 | column -s'\`' -o' | ' -t -N SUBCOMMAND,ALIASES,DESCRIPTION -R SUBCOMMAND"
 subcmd_row() {
-	echo "$1\`$2"
+	echo "$1\`\`$2"
 }
 
 usage() {
@@ -71,15 +71,40 @@ script_to_help() {
 
 subcommands_help() {
 	scope="$1"
+	out=""
+	addToOutput() {
+		name="$1"
+		aliases="$2"
+		description="$3"
+		out="$out
+$name\`$aliases\`$description"
+	}
+	addAliasToOutput() {
+		name="$1"
+		newAlias="$2"
+		description="$3"
+		if echo "$out" | grep -E "^$name\`" >/dev/null 2>&1; then
+			out="$(echo "$out" | sed "s/^$name\`/$name\`$newAlias /")"
+		else
+			addToOutput "$@"
+		fi
+	}
+
 	set +f
 	for subcmd in "$scope"/*; do
-		if [ -f "$subcmd" ]; then
-			subcmd_row "$(basename "$subcmd")" "$(extract_from_script 'Description' "$subcmd")"
+		if [ -L "$subcmd" ]; then
+			addAliasToOutput \
+				"$(basename "$(readlink -f "$subcmd")")" \
+				"$(basename "$subcmd")" \
+				"$(extract_from_script 'Description' "$subcmd")"
+		elif [ -f "$subcmd" ]; then
+			addToOutput "$(basename "$subcmd")" "" "$(extract_from_script 'Description' "$subcmd")"
 		elif [ -d "$subcmd" ]; then
 			dir_to_usage "$subcmd"
 		fi
 	done
 	set -f
+	echo "$out"
 
 	subcmd_row help 'You are looking at it'
 	subcmd_row version 'Display version information'
