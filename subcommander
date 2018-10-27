@@ -97,7 +97,7 @@ $name\`$aliases\`$description"
 				"$(basename "$(readlink -f "$subcmd")")" \
 				"$(basename "$subcmd")" \
 				"$(extract_from_script 'Description' "$subcmd")"
-		elif [ -f "$subcmd" ]; then
+		elif [ -f "$subcmd" ] && ! echo "$out" | grep -E "^$name\`" >/dev/null 2>&1; then
 			addToOutput "$(basename "$subcmd")" "" "$(extract_from_script 'Description' "$subcmd")"
 		elif [ -d "$subcmd" ]; then
 			dir_to_usage "$subcmd"
