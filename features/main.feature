@@ -30,6 +30,9 @@ Feature: Script Dispatching
             | posix -h             |
             | posix help           |
             | posix --help         |
+            | sh -h                |
+            | sh help              |
+            | sh --help            |
             | nested python -h     |
             | nested python help   |
             | nested python --help |
@@ -49,6 +52,9 @@ Feature: Script Dispatching
             | posix -v                |
             | posix version           |
             | posix --version         |
+            | sh -v                   |
+            | sh version              |
+            | sh --version            |
             | nested python -v        |
             | nested python version   |
             | nested python --version |
@@ -63,3 +69,19 @@ Feature: Script Dispatching
             | SUBCOMMAND    |
             | posix         |
             | nested python |
+
+    Scenario: Can see subcommands listed for help on root namespace
+
+        When I run `subcommander help`
+
+        Then it should pass with "Usage:"
+        And the output should match /^SUBCOMMAND\s*|\s*ALIASES\s*|\s*DESCRIPTION$/
+        And the output should match /^\s*posix\s*|\s*sh\s*|\s*Does things$/
+
+    Scenario: Can see subcommands listed for help on namespaces
+
+        When I run `subcommander help`
+
+        Then it should pass with "Usage:"
+        And the output should match /^SUBCOMMAND\s*|\s*ALIASES\s*|\s*DESCRIPTION$/
+        And the output should match /^\s*python\s*|\s*|\s*Does things with python$/

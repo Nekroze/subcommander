@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Description: Does things
+# Description: Does things with python
 # Usage: <REQUIRED> [<OPTIONAL_REPEATABLE_ARG>...]
 
 print('Hello World!')
