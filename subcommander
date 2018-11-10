@@ -92,6 +92,8 @@ $name\`$aliases\`$description"
 
 	set +f
 	for subcmd in "$scope"/*; do
+		[ "$(basename "$subcmd")" = 'version' ] && custom_version=true
+		[ "$(basename "$subcmd")" = 'help' ] && custom_help=true
 		if [ -L "$subcmd" ]; then
 			addAliasToOutput \
 				"$(basename "$(readlink -f "$subcmd")")" \
@@ -106,8 +108,8 @@ $name\`$aliases\`$description"
 	set -f
 	echo "$out"
 
-	subcmd_row help 'You are looking at it'
-	subcmd_row version 'Display version information'
+	"${custom_help:-false}" || subcmd_row help 'You are looking at it'
+	"${custom_version:-false}" || subcmd_row version 'Display version information'
 }
 
 extract_from_script() {
