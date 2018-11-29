@@ -11,7 +11,8 @@ First thing you should do is set some environment variables.
 - `APPLICATION` the executable/command that the user is running, displayed in usage.
 - `SUBCOMMANDS` the path (absolute or relative) to your subcommands, defaults to `./subcommands`.
 - `DESCRIPTION` should be set to the long description of your application displayed in usage output on the root command.
-- `VERSION` the current version of your application
+- `VERSION` the current version of your application.
+- `HOOK` the path to a shell script to be sourced (or noop for empty/undefined string) before dispatching.
 
 Once set we pass any parameters the user has given our application to subcommand for dispathching to our subcommands.
 

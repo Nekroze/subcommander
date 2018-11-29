@@ -4,6 +4,7 @@ set -euf
 export APPLICATION="${APPLICATION:-subcommander}"
 export SUBCOMMANDS="${SUBCOMMANDS:-./subcommands}"
 export DESCRIPTION="${DESCRIPTION:-$APPLICATION}"
+export HOOK="${HOOK:-}"
 export VERSION="${VERSION:-unknown}"
 
 subcommander() {
@@ -23,7 +24,7 @@ subcommander() {
 		elif is_version "${2:-}"; then # if the subcmd is an indication for version info
 			display_version # display version info
 		else # otherwise execute the file
-			shift && exec "$newscope" "$@" # pass along the rest of a params
+			shift && "$newscope" "$@" # pass along the rest of a params
 		fi
 		exit $? # exit with the status of one of the above blocks
 	fi
@@ -151,4 +152,10 @@ is_version() {
 	esac
 }
 
+maybe_call_hook() {
+    # shellcheck disable=SC1090
+    [ -z "$HOOK" ] || . "$HOOK" "$@"
+}
+
+maybe_call_hook "$@"
 subcommander "$SUBCOMMANDS" "$@"
