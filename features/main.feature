@@ -3,6 +3,7 @@ Feature: Script Dispatching
     Background:
         Given I set the environment variable "SUBCOMMANDS" to "/usr/src/app/subcommands"
 
+    @announce-output
     Scenario: Usage contains application name
         Given I set the environment variable "APPLICATION" to "Retro Encabulator"
 
@@ -58,6 +59,9 @@ Feature: Script Dispatching
             | nested python -v        |
             | nested python version   |
             | nested python --version |
+            | deep python -v          |
+            | deep python version     |
+            | deep python --version   |
 
     Scenario Outline: Can execute existing scripts
 
@@ -67,8 +71,10 @@ Feature: Script Dispatching
 
         Examples:
             | SUBCOMMAND    |
-            | posix         |
+            | deep python   |
             | nested python |
+            | posix         |
+            | sh            |
 
     Scenario: Can see subcommands listed for help on root namespace
 

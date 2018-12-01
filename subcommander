@@ -42,8 +42,12 @@ subcommander() {
 warn() {
 	>&2 printf '\e[1;33m%s\e[0m\n' "$*"
 }
+if type column > /dev/null; then
+	alias draw_subcommand_table="sort -s -k 1,1 | column -s'\`' -o' | ' -t -N SUBCOMMAND,ALIASES,DESCRIPTION -R SUBCOMMAND"
+else
+	alias draw_subcommand_table="sort -s -k 1,1"
+fi
 
-alias draw_subcommand_table="sort -s -k 1,1 | column -s'\`' -o' | ' -t -N SUBCOMMAND,ALIASES,DESCRIPTION -R SUBCOMMAND"
 subcmd_row() {
 	echo "$1\`\`$2"
 }
@@ -92,17 +96,24 @@ $name\`$aliases\`$description"
 	}
 
 	set +f
+	linkednsd="$(mktemp -d)"
 	for subcmd in "$scope"/*; do
 		[ "$(basename "$subcmd")" = 'version' ] && custom_version=true
 		[ "$(basename "$subcmd")" = 'help' ] && custom_help=true
 		if [ -L "$subcmd" ]; then
-			addAliasToOutput \
-				"$(basename "$(readlink -f "$subcmd")")" \
+			real="$(readlink -f "$subcmd")"
+			realsubcmd="$(basename "$real")"
+			desc="$(dir_to_usage "$realsubcmd" | cut -d'`' -f 3)"
+			[ -d "$real" ] || desc="$(extract_from_script 'Description' "$subcmd")"
+			touch "$linkednsd/$realsubcmd"
+			addAliasToOutput "$realsubcmd" \
 				"$(basename "$subcmd")" \
-				"$(extract_from_script 'Description' "$subcmd")"
+				"$desc"
+				
 		elif [ -f "$subcmd" ] && ! echo "$out" | grep -E "^$(basename "$subcmd")\`" >/dev/null 2>&1; then
 			addToOutput "$(basename "$subcmd")" "" "$(extract_from_script 'Description' "$subcmd")"
-		elif [ -d "$subcmd" ]; then
+		elif [ -d "$subcmd" ] && [ ! -f "$linkednsd/$(basename "$subcmd")" ] ; then
+			touch "$linkednsd/$(basename "$subcmd")"
 			dir_to_usage "$subcmd"
 		fi
 	done
