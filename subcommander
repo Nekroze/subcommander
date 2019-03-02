@@ -1,5 +1,5 @@
 #!/bin/sh
-set -euf
+set -eu
 
 export APPLICATION="${APPLICATION:-subcommander}"
 export SUBCOMMANDS="${SUBCOMMANDS:-./subcommands}"
