@@ -53,8 +53,9 @@ subcmd_row() {
 }
 
 usage() {
+    [ -z "$APPLICATION" ] || PREFIX="$APPLICATION "
 	echo 'Usage:'
-	echo "	$(scope_to_subcommand "$1") <SUBCOMMAND> [<ARGUMENT>...]"
+	echo "	${PREFIX:-}$(scope_to_subcommand "$1") <SUBCOMMAND> [<ARGUMENT>...]"
 	echo
 	echo "$DESCRIPTION"
 	echo
