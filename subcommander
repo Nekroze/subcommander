@@ -4,6 +4,7 @@ set -eu
 export APPLICATION="${APPLICATION:-subcommander}"
 export SUBCOMMANDS="${SUBCOMMANDS:-./subcommands}"
 export DESCRIPTION="${DESCRIPTION:-$APPLICATION}"
+export HELP_COLUMN_WIDTH="${HELP_COLUMN_WIDTH:-15}"
 export HOOK="${HOOK:-}"
 export VERSION="${VERSION:-unknown}"
 
@@ -42,24 +43,30 @@ subcommander() {
 warn() {
 	>&2 printf '\e[1;33m%s\e[0m\n' "$*"
 }
-if type column > /dev/null && [ "$(uname)" != 'Darwin' ]; then
-	alias draw_subcommand_table="sort -s -k 1,1 | column -s'\`' -o' | ' -t -N SUBCOMMAND,ALIASES,DESCRIPTION -R SUBCOMMAND"
-else
-	alias draw_subcommand_table="sort -s -k 1,1"
-fi
 
 subcmd_row() {
 	echo "$1\`\`$2"
 }
 
 usage() {
-    [ -z "$APPLICATION" ] || PREFIX="$APPLICATION "
+	[ -z "$APPLICATION" ] || PREFIX="$APPLICATION "
+	draw_row() {
+		printf "%-${HELP_COLUMN_WIDTH}s │ %-${HELP_COLUMN_WIDTH}s │ %s\n" "$@"
+	}
 	echo 'Usage:'
 	echo "	${PREFIX:-}$(scope_to_subcommand "$1") <SUBCOMMAND> [<ARGUMENT>...]"
 	echo
 	echo "$DESCRIPTION"
 	echo
-	subcommands_help "$1" | draw_subcommand_table
+	draw_row SUBCOMMAND ALIASES DESCRIPTION
+	IFS=$'\n'
+	subcommands_help "$1" | sort -s -k 1,1 | while read -r line; do
+		[ -n "$line" ] || continue
+		draw_row \
+			"$(echo "$line" | cut -d'`' -f1)" \
+			"$(echo "$line" | cut -d'`' -f2)" \
+			"$(echo "$line" | cut -d'`' -f3)"
+	done
 }
 
 # Takes a usage string (eg. '<SERVICE_NAME>') and a description string
@@ -172,8 +179,8 @@ is_version() {
 }
 
 maybe_call_hook() {
-    # shellcheck disable=SC1090
-    [ -z "$HOOK" ] || . "$HOOK" "$@"
+	# shellcheck disable=SC1090
+	[ -z "$HOOK" ] || . "$HOOK" "$@"
 }
 
 maybe_call_hook "$@"
