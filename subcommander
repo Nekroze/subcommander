@@ -95,6 +95,13 @@ $name\`$aliases\`$description"
 			addToOutput "$@"
 		fi
 	}
+	wrapped_readlink() {
+		if [ "$(uname)" == 'Darwin' ]; then
+			readlink "$@"
+		else
+			readlink -f "$@"
+		fi
+	}
 
 	set +f
 	linkednsd="$(mktemp -d)"
@@ -102,7 +109,7 @@ $name\`$aliases\`$description"
 		[ "$(basename "$subcmd")" = 'version' ] && custom_version=true
 		[ "$(basename "$subcmd")" = 'help' ] && custom_help=true
 		if [ -L "$subcmd" ]; then
-			real="$(readlink -f "$subcmd")"
+			real="$(wrapped_readlink "$subcmd")"
 			realsubcmd="$(basename "$real")"
 			desc="$(dir_to_usage "$realsubcmd" | cut -d'`' -f 3)"
 			[ -d "$real" ] || desc="$(extract_from_script 'Description' "$subcmd")"
