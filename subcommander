@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-export APPLICATION="${APPLICATION:-subcommander}"
+export APPLICATION="${APPLICATION:-$0}"
 export SUBCOMMANDS="${SUBCOMMANDS:-./subcommands}"
 export DESCRIPTION="${DESCRIPTION:-$APPLICATION}"
 export HELP_COLUMN_WIDTH="${HELP_COLUMN_WIDTH:-15}"
@@ -49,12 +49,15 @@ subcmd_row() {
 }
 
 usage() {
-	[ -z "$APPLICATION" ] || PREFIX="$APPLICATION "
 	draw_row() {
 		printf "%-${HELP_COLUMN_WIDTH}s │ %-${HELP_COLUMN_WIDTH}s │ %s\n" "$@"
 	}
+
+	suffix=''
+	[ -n "$1" ] || suffix=' '
+
 	echo 'Usage:'
-	echo "	${PREFIX:-}$(scope_to_subcommand "$1") <SUBCOMMAND> [<ARGUMENT>...]"
+	echo "	$APPLICATION $(scope_to_subcommand "$1")$suffix<SUBCOMMAND> [<ARGUMENT>...]"
 	echo
 	echo "$DESCRIPTION"
 	echo
@@ -75,7 +78,9 @@ print_usage() {
 }
 
 script_to_usage() {
-	echo "$(scope_to_subcommand "$1") $(extract_from_script 'Usage' "$1")"
+	suffix=''
+	[ -z "$1" ] || suffix=' '
+	echo "$APPLICATION $(scope_to_subcommand "$1")$suffix$(extract_from_script 'Usage' "$1")"
 }
 
 script_to_help() {

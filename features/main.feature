@@ -64,7 +64,6 @@ Feature: Script Dispatching
             | deep python --version   |
 
     Scenario Outline: Can execute existing scripts
-
         When I run `subcommander <SUBCOMMAND>`
 
         Then it should pass with "Hello World!"
@@ -77,23 +76,22 @@ Feature: Script Dispatching
             | sh            |
 
     Scenario: Can see subcommands listed for help on root namespace
-
         When I run `subcommander help`
 
         Then it should pass with "Usage:"
+        And the output should contain "subcommander <SUBCOMMAND"
         And the output should match /^SUBCOMMAND\s*|\s*ALIASES\s*|\s*DESCRIPTION$/
         And the output should match /^\s*posix\s*|\s*sh\s*|\s*Does things$/
 
     Scenario: Can see subcommands listed for help on namespaces
-
-        When I run `subcommander help`
+        When I run `subcommander nested help`
 
         Then it should pass with "Usage:"
+        And the output should contain "subcommander nested <SUBCOMMAND"
         And the output should match /^SUBCOMMAND\s*|\s*ALIASES\s*|\s*DESCRIPTION$/
         And the output should match /^\s*python\s*|\s*|\s*Does things with python$/
 
     Scenario: Can define a hook script to be run before dispatching
-
         Given a file named "/tmp/hook1" with:
         """
         echo 494f951e-178f-4633-bb95-a9f9f001e73d
